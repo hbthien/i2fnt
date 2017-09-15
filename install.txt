@@ -1,0 +1,43 @@
+## Python 3.6, TF 1.2.1
+
+
+
+## 1. Modify file 'im2txt/run_inference.py' -- line 74
+      with tf.gfile.GFile(filename, "rb") as f:
+
+## 2. Run the following code 
+
+OLD_CHECKPOINT_FILE = "model.ckpt-2000000"
+NEW_CHECKPOINT_FILE = "model2.ckpt-2000000"
+
+import tensorflow as tf
+vars_to_rename = {
+  "lstm/basic_lstm_cell/weights": "lstm/basic_lstm_cell/kernel",
+  "lstm/basic_lstm_cell/biases": "lstm/basic_lstm_cell/bias",
+}
+
+new_checkpoint_vars = {}
+reader = tf.train.NewCheckpointReader(OLD_CHECKPOINT_FILE)
+for old_name in reader.get_variable_to_shape_map():
+  if old_name in vars_to_rename:
+    new_name = vars_to_rename[old_name]
+  else:
+    new_name = old_name
+  new_checkpoint_vars[new_name] = tf.Variable(reader.get_tensor(old_name))
+
+init = tf.global_variables_initializer()
+saver = tf.train.Saver(new_checkpoint_vars)
+
+with tf.Session() as sess:
+  sess.run(init)
+  saver.save(sess, NEW_CHECKPOINT_FILE)
+
+## 3. Build the inference binary.
+bazel build -c opt im2txt/run_inference
+
+## 4. Run inference to generate captions.
+
+cd im2txt
+
+bazel-bin/im2txt/run_inference --checkpoint_path="../model2.ckpt-2000000" --vocab_file="../word_counts.txt" --input_files="../imgs/bikes.jpg"
+
