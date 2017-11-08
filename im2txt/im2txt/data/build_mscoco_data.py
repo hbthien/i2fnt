@@ -186,8 +186,8 @@ def _int64_feature(value):
 
 def _bytes_feature(value):
   """Wrapper for inserting a bytes Feature into a SequenceExample proto."""
-  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[str(value)]))
-
+  #return tf.train.Feature(bytes_list=tf.train.BytesList(value=[str(value)]))
+  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value.encode('utf-8') if type(value)==str else value]))
 
 def _int64_feature_list(values):
   """Wrapper for inserting an int64 FeatureList into a SequenceExample proto."""
@@ -197,7 +197,7 @@ def _int64_feature_list(values):
 def _bytes_feature_list(values):
   """Wrapper for inserting a bytes FeatureList into a SequenceExample proto."""
   return tf.train.FeatureList(feature=[_bytes_feature(v) for v in values])
-
+  
 
 def _to_sequence_example(image, decoder, vocab):
   """Builds a SequenceExample proto for an image-caption pair.
@@ -210,7 +210,7 @@ def _to_sequence_example(image, decoder, vocab):
   Returns:
     A SequenceExample proto.
   """
-  with tf.gfile.FastGFile(image.filename, "r") as f:
+  with tf.gfile.FastGFile(image.filename, "rb") as f:
     encoded_image = f.read()
 
   try:
@@ -263,7 +263,7 @@ def _process_image_files(thread_index, ranges, name, images, decoder, vocab,
   num_images_in_thread = ranges[thread_index][1] - ranges[thread_index][0]
 
   counter = 0
-  for s in xrange(num_shards_per_batch):
+  for s in range(num_shards_per_batch):
     # Generate a sharded version of the file name, e.g. 'train-00002-of-00010'
     shard = thread_index * num_shards_per_batch + s
     output_filename = "%s-%.5d-of-%.5d" % (name, shard, num_shards)
@@ -319,7 +319,7 @@ def _process_dataset(name, images, vocab, num_shards):
   spacing = np.linspace(0, len(images), num_threads + 1).astype(np.int)
   ranges = []
   threads = []
-  for i in xrange(len(spacing) - 1):
+  for i in range(len(spacing) - 1):
     ranges.append([spacing[i], spacing[i + 1]])
 
   # Create a mechanism for monitoring when all threads are finished.
@@ -330,7 +330,7 @@ def _process_dataset(name, images, vocab, num_shards):
 
   # Launch a thread for each batch.
   print("Launching %d threads for spacings: %s" % (num_threads, ranges))
-  for thread_index in xrange(len(ranges)):
+  for thread_index in range(len(ranges)):
     args = (thread_index, ranges, name, images, decoder, vocab, num_shards)
     t = threading.Thread(target=_process_image_files, args=args)
     t.start()

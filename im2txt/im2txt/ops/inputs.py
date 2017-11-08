@@ -137,7 +137,7 @@ def batch_with_dynamic_pad(images_and_captions,
   Example:
     Actual captions in the batch ('-' denotes padded character):
       [
-        [ 1 2 5 4 5 ],
+        [ 1 2 3 4 5 ],
         [ 1 2 3 4 - ],
         [ 1 2 3 - - ],
       ]
@@ -202,3 +202,4 @@ def batch_with_dynamic_pad(images_and_captions,
     tf.summary.scalar("caption_length/batch_mean", tf.reduce_mean(lengths))
 
   return images, input_seqs, target_seqs, mask
+

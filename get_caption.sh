@@ -2,7 +2,6 @@ if [ $# -eq 0 ]
 then 
   echo "path or url to image is missing"
   echo "example: ./get_caption.sh ./imgs/bikes.jpg"
-  echo "example: ./get_caption.sh https://github.com/tensorflow/models/raw/master/im2txt/g3doc/COCO_val2014_000000224477.jpg"
   exit 3
 fi
 
